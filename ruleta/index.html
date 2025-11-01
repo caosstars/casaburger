@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ruleta CasaBurger</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>🎡 Ruleta de CasaBurger</h1>
+  
+  <div class="formulario">
+    <input type="text" id="nombre" placeholder="Nombre completo" required>
+    <input type="tel" id="telefono" placeholder="Número de teléfono" required>
+    <input type="date" id="cumple" required>
+  </div>
+
+  <div class="ruleta-container">
+    <div id="ruleta"></div>
+    <img src="https://casaburger.club/logo250.png" class="logo-centro" alt="Logo CasaBurger">
+  </div>
+
+  <button id="girar">GIRAR</button>
+  <button id="nuevo" disabled>Nuevo Giro</button>
+
+  <script src="script.js"></script>
+</body>
+</html>

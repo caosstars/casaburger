@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruleta de Sorteos - Casaburger</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(to bottom, #000000, #3a2c00);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #ffcc00;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+        }
+
+        .header p {
+            color: #ffd700;
+            font-size: 1.2rem;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 40px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .form-section {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 0 20px rgba(255, 204, 0, 0.3);
+            border: 1px solid #ffcc00;
+        }
+
+        .form-section h2 {
+            color: #ffcc00;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ffd700;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ffcc00;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            box-shadow: 0 0 5px #ffcc00;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 450px;
+            height: 450px;
+        }
+
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            border: 10px solid #ffcc00;
+            box-shadow: 0 0 30px rgba(255, 204, 0, 0.7);
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+            background: #000;
+        }
+
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            background: #ffcc00;
+            border-radius: 50%;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.8);
+            border: 3px solid #ffd700;
+        }
+
+        .wheel-center img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+        }
+
+        .wheel-section {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            transform-origin: bottom right;
+            left: 0;
+            top: 0;
+            overflow: hidden;
+            clip-path: polygon(100% 0, 0 0, 100% 100%);
+        }
+
+        .wheel-section-content {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            left: -100%;
+            top: -100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform-origin: center;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .wheel-section-text {
+            position: absolute;
+            width: 120px;
+            bottom: 60px;
+            right: 30px;
+            text-align: center;
+            transform: rotate(45deg);
+            color: #000;
+            font-weight: bold;
+            font-size: 14px;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.7);
+        }
+
+        .pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            background: #ff0000;
+            clip-path: polygon(50% 100%, 0 0, 100% 0);
+            z-index: 20;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
+        }
+
+        .spin-button {
+            background: linear-gradient(to bottom, #ffcc00, #ff9900);
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 30px;
+            box-shadow: 0 5px 15px rgba(255, 204, 0, 0.5);
+            transition: all 0.3s;
+            width: 200px;
+        }
+
+        .spin-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 204, 0, 0.7);
+        }
+
+        .spin-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            display: none;
+        }
+
+        .win {
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+            border: 1px solid #00ff00;
+        }
+
+        .lose {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff0000;
+            border: 1px solid #ff0000;
+        }
+
+        .jackpot {
+            background: rgba(255, 215, 0, 0.3);
+            color: #ffd700;
+            border: 1px solid #ffd700;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 5px #ffd700; }
+            50% { box-shadow: 0 0 20px #ffd700; }
+            100% { box-shadow: 0 0 5px #ffd700; }
+        }
+
+        .new-spin-button {
+            background: linear-gradient(to bottom, #00cc00, #009900);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .stats {
+            margin-top: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .stats h3 {
+            color: #ffcc00;
+            margin-bottom: 10px;
+        }
+
+        .loading {
+            display: none;
+            margin-top: 10px;
+            color: #ffcc00;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .wheel-container {
+                width: 350px;
+                height: 350px;
+            }
+            
+            .wheel-section-text {
+                width: 100px;
+                bottom: 50px;
+                right: 25px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Ruleta de Sorteos Casaburger</h1>
+        <p>¡Gira la ruleta y gana premios increíbles!</p>
+    </div>
+
+    <div class="container">
+        <div class="form-section">
+            <h2>Participa en el Sorteo</h2>
+            <form id="participant-form">
+                <div class="form-group">
+                    <label for="name">Nombre completo:</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Número de teléfono:</label>
+                    <input type="tel" id="phone" name="phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="birthday">Fecha de cumpleaños:</label>
+                    <input type="date" id="birthday" name="birthday" required>
+                </div>
+            </form>
+        </div>
+
+        <div class="wheel-container">
+            <div class="pointer"></div>
+            <div class="wheel" id="wheel">
+                <!-- Las secciones se generarán con JavaScript -->
+                <div class="wheel-center">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj48Y2lyY2xlIGN4PSIxMDAiIGN5PSIxMDAiIHI9IjgwIiBmaWxsPSIjZmZjYzAwIi8+PHBhdGggZD0iTTgwIDEwMEwxMjAgMTAwTTEwMCA4MEwxMDAgMTIwTTc1IDc1TDEyNSAxMjVNMTI1IDc1TDc1IDEyNSIgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjgiLz48dGV4dCB4PSIxMDAiIHk9IjE0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzAwMCIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiPkNhc2FidXJnZXI8L3RleHQ+PC9zdmc+" alt="Logo Casaburger">
+                </div>
+            </div>
+            <button class="spin-button" id="spin-button">GIRAR</button>
+            <div class="result" id="result"></div>
+            <div class="loading" id="loading">Guardando resultado...</div>
+            <button class="new-spin-button" id="new-spin-button">NUEVO GIRO</button>
+        </div>
+    </div>
+
+    <div class="stats">
+        <h3>Estadísticas del Sorteo</h3>
+        <p>Premios otorgados: <span id="prizes-count">0</span></p>
+        <p>Premio máximo disponible en: <span id="jackpot-counter">300</span> giros</p>
+    </div>
+
+    <script>
+        // Variables de control
+        let isSpinning = false;
+        let spinCount = 0;
+        let jackpotCounter = 300;
+        let prizesCount = 0;
+
+        // Configuración de la ruleta
+        const wheelSections = [
+            { 
+                type: "premio", 
+                value: "Vale de 30 soles", 
+                color: "#4CAF50", 
+                text: "Vale 30 S/"
+            },
+            { 
+                type: "premio", 
+                value: "Vale de 30 soles", 
+                color: "#4CAF50", 
+                text: "Vale 30 S/"
+            },
+            { 
+                type: "perdido", 
+                value: "Sin premio", 
+                color: "#F44336", 
+                text: "Sin Premio"
+            },
+            { 
+                type: "premio", 
+                value: "Vale de 30 soles", 
+                color: "#4CAF50", 
+                text: "Vale 30 S/"
+            },
+            { 
+                type: "perdido", 
+                value: "Sin premio", 
+                color: "#F44336", 
+                text: "Sin Premio"
+            },
+            { 
+                type: "premio", 
+                value: "Vale de 30 soles", 
+                color: "#4CAF50", 
+                text: "Vale 30 S/"
+            },
+            { 
+                type: "perdido", 
+                value: "Sin premio", 
+                color: "#F44336", 
+                text: "Sin Premio"
+            },
+            { 
+                type: "jackpot", 
+                value: "Vale de 100 soles", 
+                color: "#FFD700", 
+                text: "PREMIO MÁXIMO 100 S/"
+            }
+        ];
+
+        // ID de tu Google Sheet (debes reemplazar esto)
+        const GOOGLE_SHEET_ID = 'AKfycbwdy3Wol0VDuthSKR-GfkNadl65L5b0T6bJUz009uz6';
+        
+        // URL de tu Google Apps Script (debes reemplazar esto)
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwdy3Wol0VDuthSKR-GfkNadl65L5b0T6bJUz009uz6/dev';
+
+        // Inicializar la ruleta
+        function initializeWheel() {
+            const wheel = document.getElementById('wheel');
+            wheel.innerHTML = '<div class="wheel-center"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj48Y2lyY2xlIGN4PSIxMDAiIGN5PSIxMDAiIHI9IjgwIiBmaWxsPSIjZmZjYzAwIi8+PHBhdGggZD0iTTgwIDEwMEwxMjAgMTAwTTEwMCA4MEwxMDAgMTIwTTc1IDc1TDEyNSAxMjVNMTI1IDc1TDc1IDEyNSIgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjgiLz48dGV4dCB4PSIxMDAiIHk9IjE0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzAwMCIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiPkNhc2FidXJnZXI8L3RleHQ+PC9zdmc+" alt="Logo Casaburger"></div>';
+            
+            wheelSections.forEach((section, index) => {
+                const angle = (360 / wheelSections.length) * index;
+                const sectionElement = document.createElement('div');
+                sectionElement.className = 'wheel-section';
+                sectionElement.style.transform = `rotate(${angle}deg)`;
+                
+                const content = document.createElement('div');
+                content.className = 'wheel-section-content';
+                content.style.backgroundColor = section.color;
+                
+                const text = document.createElement('div');
+                text.className = 'wheel-section-text';
+                text.textContent = section.text;
+                
+                content.appendChild(text);
+                sectionElement.appendChild(content);
+                wheel.appendChild(sectionElement);
+            });
+        }
+
+        // Función para guardar en Google Sheets
+        async function saveToGoogleSheets(name, phone, birthday, result) {
+            const loadingElement = document.getElementById('loading');
+            loadingElement.style.display = 'block';
+            
+            try {
+                // Datos a enviar
+                const formData = new FormData();
+                formData.append('name', name);
+                formData.append('phone', phone);
+                formData.append('birthday', birthday);
+                formData.append('result', result);
+                formData.append('timestamp', new Date().toISOString());
+                
+                // Enviar datos al Google Apps Script
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    console.log('Datos guardados exitosamente en Google Sheets');
+                    return true;
+                } else {
+                    throw new Error('Error al guardar en Google Sheets');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                // Guardar en localStorage como respaldo
+                const backupData = {
+                    name: name,
+                    phone: phone,
+                    birthday: birthday,
+                    result: result,
+                    timestamp: new Date().toISOString()
+                };
+                
+                let existingData = JSON.parse(localStorage.getItem('ruleta_backup') || '[]');
+                existingData.push(backupData);
+                localStorage.setItem('ruleta_backup', JSON.stringify(existingData));
+                
+                alert('No se pudo guardar el resultado. Los datos se guardaron localmente.');
+                return false;
+            } finally {
+                loadingElement.style.display = 'none';
+            }
+        }
+
+        // Función para girar la ruleta
+        async function spinWheel() {
+            if (isSpinning) return;
+            
+            // Validar formulario
+            const name = document.getElementById('name').value;
+            const phone = document.getElementById('phone').value;
+            const birthday = document.getElementById('birthday').value;
+            
+            if (!name || !phone || !birthday) {
+                alert('Por favor, completa todos los campos del formulario.');
+                return;
+            }
+            
+            isSpinning = true;
+            document.getElementById('spin-button').disabled = true;
+            
+            // Determinar el resultado según la lógica de negocio
+            spinCount++;
+            jackpotCounter--;
+            
+            let resultIndex;
+            let resultType;
+            
+            // Lógica: cada 5 giros hay un premio, y el premio máximo aparece después de 300 giros
+            if (jackpotCounter <= 0) {
+                // Premio máximo
+                resultIndex = 7; // Índice del premio máximo
+                resultType = "jackpot";
+                jackpotCounter = 300; // Reiniciar contador
+            } else if (spinCount % 5 === 0) {
+                // Premio regular
+                const prizeIndices = [0, 1, 3, 5]; // Índices de premios regulares
+                resultIndex = prizeIndices[Math.floor(Math.random() * prizeIndices.length)];
+                resultType = "premio";
+                prizesCount++;
+            } else {
+                // Sin premio
+                const loseIndices = [2, 4, 6]; // Índices de "sin premio"
+                resultIndex = loseIndices[Math.floor(Math.random() * loseIndices.length)];
+                resultType = "perdido";
+            }
+            
+            // Calcular el ángulo de parada
+            const sectionAngle = 360 / wheelSections.length;
+            const stopAngle = 3600 - (resultIndex * sectionAngle) - (sectionAngle / 2);
+            
+            // Girar la ruleta
+            const wheel = document.getElementById('wheel');
+            wheel.style.transform = `rotate(${stopAngle}deg)`;
+            
+            // Mostrar resultado después de la animación
+            setTimeout(async () => {
+                const result = wheelSections[resultIndex];
+                const resultElement = document.getElementById('result');
+                resultElement.textContent = `¡${result.value}!`;
+                resultElement.style.display = 'block';
+                
+                // Aplicar clase según el tipo de resultado
+                resultElement.className = 'result';
+                if (resultType === "premio") {
+                    resultElement.classList.add('win');
+                } else if (resultType === "perdido") {
+                    resultElement.classList.add('lose');
+                } else if (resultType === "jackpot") {
+                    resultElement.classList.add('jackpot');
+                }
+                
+                // Guardar en Google Sheets
+                await saveToGoogleSheets(name, phone, birthday, result.value);
+                
+                // Mostrar botón de nuevo giro
+                document.getElementById('new-spin-button').style.display = 'block';
+                
+                // Actualizar estadísticas
+                document.getElementById('jackpot-counter').textContent = jackpotCounter;
+                document.getElementById('prizes-count').textContent = prizesCount;
+                
+                isSpinning = false;
+            }, 4000);
+        }
+
+        // Función para nuevo giro
+        function newSpin() {
+            document.getElementById('participant-form').reset();
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('new-spin-button').style.display = 'none';
+            document.getElementById('spin-button').disabled = false;
+            
+            const wheel = document.getElementById('wheel');
+            wheel.style.transform = 'rotate(0deg)';
+        }
+
+        // Inicializar la ruleta cuando se carga la página
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeWheel();
+            
+            // Configurar eventos
+            document.getElementById('spin-button').addEventListener('click', spinWheel);
+            document.getElementById('new-spin-button').addEventListener('click', newSpin);
+            
+            // Cargar estadísticas iniciales
+            document.getElementById('jackpot-counter').textContent = jackpotCounter;
+            document.getElementById('prizes-count').textContent = prizesCount;
+        });
+    </script>
+</body>
+</html>
